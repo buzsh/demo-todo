@@ -2,22 +2,22 @@
 
 import { TodoItem } from "@/components/TodoItem";
 import { nanoid } from "nanoid";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Todo } from "../types/todo";
-
-/**
- *
- * 1) CopilotKit Integration
- *
- **/
-
 import {
   CopilotKit,
   useCopilotAction,
   useCopilotReadable,
+  useCopilotChat,
 } from "@copilotkit/react-core";
 import { CopilotPopup } from "@copilotkit/react-ui";
 import "@copilotkit/react-ui/styles.css";
+
+declare global {
+  interface Window {
+    sendMessageToCopilot: (message: string) => void;
+  }
+}
 
 export default function Home() {
   return (
@@ -25,24 +25,8 @@ export default function Home() {
       <h1 className="text-2xl font-bold ">Hello CopilotKit 🪁</h1>
       <h2 className="text-base font-base mb-4">Todo List Example</h2>
 
-      {/**
-       *
-       * 2) Wrap the TodoList component with CopilotKit
-       *
-       **/}
-
-      <CopilotKit
-        //publicApiKey={process.env.NEXT_PUBLIC_COPILOT_CLOUD_API_KEY}
-        // Alternatively, you can use runtimeUrl to host your own CopilotKit Runtime
-        runtimeUrl="/api/copilotkit"
-      >
+      <CopilotKit runtimeUrl="/api/copilotkit">
         <TodoList />
-
-        {/**
-         *
-         * 3) Add the CopilotPopup component to get the chat
-         *
-         */}
 
         <CopilotPopup
           instructions={
@@ -65,21 +49,10 @@ const TodoList: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [input, setInput] = useState("");
 
-  /**
-   *
-   * 4) make the users todo list available with useCopilotReadable
-   *
-   **/
   useCopilotReadable({
     description: "The user's todo list.",
     value: todos,
   });
-
-  /**
-   *
-   * 5) Add the useCopilotAction to enable the copilot to interact with the todo list
-   *
-   **/
 
   useCopilotAction({
     name: "updateTodoList",
@@ -93,8 +66,7 @@ const TodoList: React.FC = () => {
           {
             name: "id",
             type: "string",
-            description:
-              "The id of the todo item. When creating a new todo item, just make up a new id.",
+            description: "The id of the todo item. When creating a new todo item, just make up a new id.",
           },
           {
             name: "text",
@@ -109,20 +81,16 @@ const TodoList: React.FC = () => {
           {
             name: "assignedTo",
             type: "string",
-            description:
-              "The person assigned to the todo item. If you don't know, assign it to 'YOU'.",
+            description: "The person assigned to the todo item. If you don't know, assign it to 'YOU'.",
             required: true,
           },
         ],
       },
     ],
     handler: ({ items }) => {
-      console.log(items);
       const newTodos = [...todos];
       for (const item of items) {
-        const existingItemIndex = newTodos.findIndex(
-          (todo) => todo.id === item.id
-        );
+        const existingItemIndex = newTodos.findIndex((todo) => todo.id === item.id);
         if (existingItemIndex !== -1) {
           newTodos[existingItemIndex] = item;
         } else {
@@ -134,11 +102,6 @@ const TodoList: React.FC = () => {
     render: "Updating the todo list...",
   });
 
-  /**
-   *
-   * 5) Add another useCopilotAction to enable the copilot to delete a todo item
-   *
-   **/
   useCopilotAction({
     name: "deleteTodo",
     description: "Delete a todo item",
@@ -155,16 +118,28 @@ const TodoList: React.FC = () => {
     render: "Deleting a todo item...",
   });
 
+  const { append } = useCopilotChat({
+    id: "todoListChat", // Unique identifier for the chat
+  });
+
+  const sendMessageToCopilot = useCallback((message: string) => {
+    append({ id: nanoid(), content: message, role: "user" });
+  }, [append]);
+
+  useEffect(() => {
+    window.sendMessageToCopilot = sendMessageToCopilot;
+  }, [sendMessageToCopilot]);
+
   const addTodo = () => {
     if (input.trim() !== "") {
-      // Check if input is not just whitespace
       const newTodo: Todo = {
         id: nanoid(),
-        text: input.trim(), // Trim whitespace
+        text: input.trim(),
         isCompleted: false,
       };
       setTodos([...todos, newTodo]);
-      setInput(""); // Reset input field
+      setInput("");
+      sendMessageToCopilot("A new todo item was added to the list.");
     }
   };
 
@@ -189,9 +164,7 @@ const TodoList: React.FC = () => {
   const assignPerson = (id: string, person: string | null) => {
     setTodos(
       todos.map((todo) =>
-        todo.id === id
-          ? { ...todo, assignedTo: person ? person : undefined }
-          : todo
+        todo.id === id ? { ...todo, assignedTo: person ? person : undefined } : todo
       )
     );
   };
@@ -203,12 +176,9 @@ const TodoList: React.FC = () => {
           className="border rounded-md p-2 flex-1 mr-2"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyPress} // Add this to handle the Enter key press
+          onKeyDown={handleKeyPress}
         />
-        <button
-          className="bg-blue-500 rounded-md p-2 text-white"
-          onClick={addTodo}
-        >
+        <button className="bg-blue-500 rounded-md p-2 text-white" onClick={addTodo}>
           Add Todo
         </button>
       </div>
