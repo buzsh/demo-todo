@@ -123,7 +123,10 @@ const TodoList: React.FC = () => {
   });
 
   const sendMessageToCopilot = useCallback((message: string) => {
-    append({ id: nanoid(), content: message, role: "user" });
+    append({ id: nanoid(), content: message, role: "user" })
+      .then(() => {
+        console.log("Message processed by CopilotKit");
+      });
   }, [append]);
 
   useEffect(() => {
