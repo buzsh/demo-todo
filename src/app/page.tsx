@@ -83,7 +83,7 @@ export default function Home() {
 
   return (
     <div className="rounded-md max-w-2xl mx-auto p-4">
-      <h1 className="text-2xl font-bold ">Reminders</h1>
+      <h1 className="text-3xl font-bold ">Reminders</h1>
       <h2 className="text-base font-base mb-4">{today}</h2>
 
       <CopilotKit runtimeUrl="/api/copilotkit">

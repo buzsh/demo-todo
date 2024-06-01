@@ -35,7 +35,7 @@ export const TodoItem: React.FC<TodoItemProps> = ({
           }`}
         >
           {todo.assignedTo && (
-            <span className="border rounded-md text-xs py-[2px] px-1 mr-2  border-purple-700 uppercase bg-purple-400 text-black font-medium">
+            <span className="border rounded-md text-xs py-[2px] px-1 mr-2  border-black uppercase bg-white text-black font-medium">
               {todo.assignedTo}
             </span>
           )}
