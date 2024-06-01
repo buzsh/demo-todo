@@ -2,7 +2,7 @@
 
 import { TodoItem } from "@/components/TodoItem";
 import { nanoid } from "nanoid";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Todo } from "../types/todo";
 import {
   CopilotKit,
@@ -10,7 +10,7 @@ import {
   useCopilotReadable,
   useCopilotChat,
 } from "@copilotkit/react-core";
-import { CopilotPopup } from "@copilotkit/react-ui";
+import { CopilotPopup, CopilotSidebar } from "@copilotkit/react-ui";
 import "@copilotkit/react-ui/styles.css";
 
 declare global {
@@ -23,14 +23,33 @@ declare global {
       };
     };
     sendMessageToCopilot: (message: string) => void;
+    showCopilotSidebar: () => void;
   }
 }
 
+const EmptyButton: React.FC = () => null;
+
 export default function Home() {
+  const today = new Date().toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+  });
+
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
+
+  const showCopilotSidebar = () => {
+    setSidebarOpen(true);
+  };
+
+  useEffect(() => {
+    window.showCopilotSidebar = showCopilotSidebar;
+  }, []);
+
   return (
     <div className="border rounded-md max-w-2xl mx-auto p-4">
-      <h1 className="text-2xl font-bold ">Hello CopilotKit 🪁</h1>
-      <h2 className="text-base font-base mb-4">Todo List Example</h2>
+      <h1 className="text-2xl font-bold ">Reminders</h1>
+      <h2 className="text-base font-base mb-4">{today}</h2>
 
       <CopilotKit runtimeUrl="/api/copilotkit">
         <TodoList />
@@ -40,13 +59,31 @@ export default function Home() {
             "Help the user manage a todo list. If the user provides a high level goal, " +
             "break it down into a few specific tasks and add them to the list"
           }
-          defaultOpen={true}
+          defaultOpen={false}
           labels={{
             title: "Todo List Copilot",
             initial: "Hi you! 👋 I can help you manage your todo list.",
           }}
-          clickOutsideToClose={false}
+          clickOutsideToClose={true}
+          showResponseButton={false}
+          Button={EmptyButton}
+          onSetOpen={(open) => setSidebarOpen(open)}
         />
+
+{/*
+        <CopilotSidebar
+          instructions={
+            "Help the user manage a todo list. If the user provides a high level goal, " +
+            "break it down into a few specific tasks and add them to the list"
+          }
+          defaultOpen={false}
+          labels={{
+            title: "Todo List Copilot",
+            initial: "Hi you! 👋 I can help you manage your todo list.",
+          }}
+          clickOutsideToClose={true}
+        />
+        */}
       </CopilotKit>
     </div>
   );
@@ -126,16 +163,21 @@ const TodoList: React.FC = () => {
   });
 
   const { append } = useCopilotChat({
-    id: "todoListChat", // Unique identifier for the chat
+    id: "todoListChat",
   });
 
   const sendMessageToCopilot = useCallback((message: string) => {
     append({ id: nanoid(), content: message, role: "user" })
       .then(() => {
         console.log("Message processed by CopilotKit");
-        window.webkit.messageHandlers.copilotMessageProcessed.postMessage("Message processed by CopilotKit");
+        if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.copilotMessageProcessed) {
+          window.webkit.messageHandlers.copilotMessageProcessed.postMessage("Message processed by CopilotKit");
+        } else {
+          console.warn("Message handler 'copilotMessageProcessed' is not available.");
+        }
       });
   }, [append]);
+  
 
   useEffect(() => {
     window.sendMessageToCopilot = sendMessageToCopilot;
@@ -190,7 +232,7 @@ const TodoList: React.FC = () => {
           onKeyDown={handleKeyPress}
         />
         <button className="bg-blue-500 rounded-md p-2 text-white" onClick={addTodo}>
-          Add Todo
+          Add Reminder
         </button>
       </div>
       {todos.length > 0 && (
