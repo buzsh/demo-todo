@@ -15,6 +15,13 @@ import "@copilotkit/react-ui/styles.css";
 
 declare global {
   interface Window {
+    webkit: {
+      messageHandlers: {
+        copilotMessageProcessed: {
+          postMessage: (message: string) => void;
+        };
+      };
+    };
     sendMessageToCopilot: (message: string) => void;
   }
 }
@@ -126,6 +133,7 @@ const TodoList: React.FC = () => {
     append({ id: nanoid(), content: message, role: "user" })
       .then(() => {
         console.log("Message processed by CopilotKit");
+        window.webkit.messageHandlers.copilotMessageProcessed.postMessage("Message processed by CopilotKit");
       });
   }, [append]);
 
