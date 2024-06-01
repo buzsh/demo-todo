@@ -3,22 +3,5 @@
 @tailwind utilities;
 
 .copilotKitInput > textarea {
-  flex: 1; /* Allow textarea to take up remaining space */
-  outline: 2px solid transparent;
-  outline-offset: 2px;
-  resize: none;
-  white-space: pre-wrap;
-  overflow-wrap: break-word;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  cursor: text;
-  font-size: 16px; /* Updated font size */
-  line-height: 1.25rem;
-  margin: 0;
-  padding: 0;
-  font-family: inherit;
-  font-weight: inherit;
-  color: var(--copilot-kit-input-color);
-  border: 0px;
-  background-color: var(--copilot-kit-input-background-color);
+  font-size: 16px;
 }

@@ -101,6 +101,7 @@ export default function Home() {
               initial: "Hi you! 👋 I can help you manage your todo list.",
             }}
             clickOutsideToClose={true}
+            showResponseButton={false}
             onSetOpen={(open) => {
               if (!open) {
                 hideCopilotPopup();
@@ -121,6 +122,7 @@ export default function Home() {
               initial: "Hi you! 👋 I can help you manage your todo list.",
             }}
             clickOutsideToClose={true}
+            showResponseButton={false}
             onSetOpen={(open) => {
               if (!open) {
                 hideCopilotSidebar();
