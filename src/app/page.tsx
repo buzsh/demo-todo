@@ -20,10 +20,19 @@ declare global {
         copilotMessageProcessed: {
           postMessage: (message: string) => void;
         };
+        copilotSidebarHidden: {
+          postMessage: (message: string) => void;
+        };
+        copilotPopupHidden: {
+          postMessage: (message: string) => void;
+        };
       };
     };
     sendMessageToCopilot: (message: string) => void;
     showCopilotSidebar: () => void;
+    hideCopilotSidebar: () => void;
+    showCopilotPopup: () => void;
+    hideCopilotPopup: () => void;
   }
 }
 
@@ -36,14 +45,40 @@ export default function Home() {
     day: 'numeric',
   });
 
-  const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
 
   const showCopilotSidebar = () => {
-    setSidebarOpen(true);
+    setShowSidebar(true);
+  };
+
+  const hideCopilotSidebar = () => {
+    setShowSidebar(false);
+    if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.copilotSidebarHidden) {
+      window.webkit.messageHandlers.copilotSidebarHidden.postMessage("Copilot sidebar is hidden");
+    } else {
+      console.warn("Message handler 'copilotSidebarHidden' is not available.");
+    }
+  };
+
+  const showCopilotPopup = () => {
+    setShowPopup(true);
+  };
+
+  const hideCopilotPopup = () => {
+    setShowPopup(false);
+    if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.copilotPopupHidden) {
+      window.webkit.messageHandlers.copilotPopupHidden.postMessage("Copilot popup is hidden");
+    } else {
+      console.warn("Message handler 'copilotPopupHidden' is not available.");
+    }
   };
 
   useEffect(() => {
     window.showCopilotSidebar = showCopilotSidebar;
+    window.hideCopilotSidebar = hideCopilotSidebar;
+    window.showCopilotPopup = showCopilotPopup;
+    window.hideCopilotPopup = hideCopilotPopup;
   }, []);
 
   return (
@@ -54,36 +89,47 @@ export default function Home() {
       <CopilotKit runtimeUrl="/api/copilotkit">
         <TodoList />
 
-        <CopilotPopup
-          instructions={
-            "Help the user manage a todo list. If the user provides a high level goal, " +
-            "break it down into a few specific tasks and add them to the list"
-          }
-          defaultOpen={false}
-          labels={{
-            title: "Todo List Copilot",
-            initial: "Hi you! 👋 I can help you manage your todo list.",
-          }}
-          clickOutsideToClose={true}
-          showResponseButton={false}
-          Button={EmptyButton}
-          onSetOpen={(open) => setSidebarOpen(open)}
-        />
+        {showPopup && (
+          <CopilotPopup
+            instructions={
+              "Help the user manage a todo list. If the user provides a high level goal, " +
+              "break it down into a few specific tasks and add them to the list"
+            }
+            defaultOpen={true}
+            labels={{
+              title: "Todo List Copilot",
+              initial: "Hi you! 👋 I can help you manage your todo list.",
+            }}
+            clickOutsideToClose={true}
+            onSetOpen={(open) => {
+              if (!open) {
+                hideCopilotPopup();
+              }
+            }}
+          />
+        )}
 
-{/*
-        <CopilotSidebar
-          instructions={
-            "Help the user manage a todo list. If the user provides a high level goal, " +
-            "break it down into a few specific tasks and add them to the list"
-          }
-          defaultOpen={false}
-          labels={{
-            title: "Todo List Copilot",
-            initial: "Hi you! 👋 I can help you manage your todo list.",
-          }}
-          clickOutsideToClose={true}
-        />
-        */}
+        {showSidebar && (
+          <CopilotSidebar
+            instructions={
+              "Help the user manage a todo list. If the user provides a high level goal, " +
+              "break it down into a few specific tasks and add them to the list"
+            }
+            defaultOpen={true}
+            labels={{
+              title: "Todo List Copilot",
+              initial: "Hi you! 👋 I can help you manage your todo list.",
+            }}
+            clickOutsideToClose={true}
+            onSetOpen={(open) => {
+              if (!open) {
+                hideCopilotSidebar();
+              }
+            }}
+            Button={EmptyButton}
+          />
+        )}
+        
       </CopilotKit>
     </div>
   );
