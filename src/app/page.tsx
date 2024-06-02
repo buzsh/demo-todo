@@ -2,7 +2,7 @@
 
 import { TodoItem } from "@/components/TodoItem";
 import { nanoid } from "nanoid";
-import { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Todo } from "../types/todo";
 import {
   CopilotKit,
@@ -36,6 +36,7 @@ declare global {
   }
 }
 
+const EmptyInput: React.FC = () => null;
 const EmptyButton: React.FC = () => null;
 
 export default function Home() {
@@ -107,6 +108,8 @@ export default function Home() {
                 hideCopilotPopup();
               }
             }}
+            Button={EmptyButton}
+            Input={EmptyInput}
           />
         )}
 
@@ -129,6 +132,7 @@ export default function Home() {
               }
             }}
             Button={EmptyButton}
+            Input={EmptyInput}
           />
         )}
         
