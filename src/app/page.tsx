@@ -98,8 +98,8 @@ export default function Home() {
             }
             defaultOpen={true}
             labels={{
-              title: "Todo List Copilot",
-              initial: "Hi you! 👋 I can help you manage your todo list.",
+              title: "Vessium",
+              initial: "Hi there! 👋 I can help you manage your reminders.",
             }}
             clickOutsideToClose={true}
             showResponseButton={false}
@@ -121,8 +121,8 @@ export default function Home() {
             }
             defaultOpen={true}
             labels={{
-              title: "Todo List Copilot",
-              initial: "Hi you! 👋 I can help you manage your todo list.",
+              title: "Vessium",
+              initial: "Hi there! 👋 I can help you manage your reminders.",
             }}
             clickOutsideToClose={true}
             showResponseButton={false}
